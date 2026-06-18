@@ -1,0 +1,1 @@
+# kampanya_verimlilikleri
