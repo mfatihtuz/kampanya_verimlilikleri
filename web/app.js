@@ -597,8 +597,10 @@
         $('kpiSaatDelta').hidden = true;
         var yv = groupBy(rows, 'yil');
         var yrs = Object.keys(yv).sort();
-        if (yrs.length >= 2) {
-            var cur = yv[yrs[yrs.length - 1]], prev = yv[yrs[yrs.length - 2]], py = yrs[yrs.length - 2];
+        var cur = yrs.length >= 2 ? yv[yrs[yrs.length - 1]] : null;
+        var prev = yrs.length >= 2 ? yv[yrs[yrs.length - 2]] : null;
+        if (cur && prev && cur.h > 0 && prev.h > 0) {
+            var py = yrs[yrs.length - 2];
             setDelta('kpiVerimDelta', (cur.wV / cur.h) - (prev.wV / prev.h), py, 'pt');
             setDelta('kpiDevirDelta', (cur.wD / cur.h) - (prev.wD / prev.h), py, '');
         } else {
@@ -616,20 +618,31 @@
         var strip = $('insightStrip');
         if (!rows.length) { strip.hidden = true; strip.innerHTML = ''; return; }
         var ins = [];
+        // 1) Yillik degisim (oran metrigi; hacimden bagimsiz)
         var yv = groupBy(rows, 'yil'), yrs = Object.keys(yv).sort();
         if (yrs.length >= 2) {
             var cur = yv[yrs[yrs.length - 1]], prev = yv[yrs[yrs.length - 2]];
-            var d = (cur.wV / cur.h) - (prev.wV / prev.h);
-            ins.push({ dir: d >= 0 ? 'up' : 'down', html: '<b>' + esc(yrs[yrs.length - 1]) + '</b> verimi ' + esc(yrs[yrs.length - 2]) + "'e göre <b>" + (d >= 0 ? '+' : '−') + fmt(Math.abs(d), 1) + ' puan</b> ' + (d >= 0 ? 'arttı' : 'azaldı') + '.' });
+            if (cur.h > 0 && prev.h > 0) {
+                var d = (cur.wV / cur.h) - (prev.wV / prev.h);
+                ins.push({ dir: d >= 0 ? 'up' : 'down', html: '<b>' + esc(yrs[yrs.length - 1]) + '</b> verimi ' + esc(yrs[yrs.length - 2]) + '’e göre <b>' + (d >= 0 ? '+' : '−') + fmt(Math.abs(d), 1) + ' puan</b> ' + (d >= 0 ? 'arttı' : 'azaldı') + '.' });
+            }
         }
+        // 2) Ana kisit: verim ≈ adetsel × zamansal; dusuk olan bilesen kisittir
+        var aAd = wAvg(rows, 'adetsel'), aZa = wAvg(rows, 'zamansal');
+        if (aAd > 0 && aZa > 0) {
+            var bn = aZa <= aAd
+                ? { n: 'Zamansal', v: aZa, why: 'duruş/süre kayıpları' }
+                : { n: 'Adetsel', v: aAd, why: 'hız/fire kayıpları' };
+            ins.push({ dir: 'down', html: 'Verimi en çok sınırlayan: <b>' + bn.n + '</b> (%' + fmt(bn.v, 1) + ') — ' + bn.why + '.' });
+        }
+        // 3) En iyi / en dusuk hat
         var lines = lineStats(rows);
-        if (lines.length) {
-            var best = lines[0];
-            ins.push({ dir: 'flat', html: 'En yüksek hat: <b>' + esc(best.label) + '</b> (%' + fmt(best.value, 1) + ').' });
+        if (lines.length >= 2) {
+            var best = lines[0], worst = lines[lines.length - 1];
+            ins.push({ dir: 'flat', html: 'En iyi hat <b>' + esc(best.label) + '</b> (%' + fmt(best.value, 1) + '), en düşük <b>' + esc(worst.label) + '</b> (%' + fmt(worst.value, 1) + ').' });
+        } else if (lines.length === 1) {
+            ins.push({ dir: 'flat', html: 'Hat <b>' + esc(lines[0].label) + '</b>: %' + fmt(lines[0].value, 1) + '.' });
         }
-        var below = 0; rows.forEach(function (c) { if (c.verim < 91) below++; });
-        var pct = below / rows.length * 100;
-        ins.push({ dir: pct > 40 ? 'down' : 'up', html: "Kampanyaların <b>%" + fmt(pct, 0) + "</b>'i hedefin altında (&lt;%91)." });
 
         strip.hidden = false;
         strip.innerHTML = ins.slice(0, 3).map(function (o) {
@@ -657,7 +670,17 @@
     }
 
     function renderLineCompare(rows) {
-        barsH('lineCompareChart', lineStats(rows));
+        var items = lineStats(rows);
+        var el = $('lineCompareChart');
+        if (!items.length) { el.innerHTML = '<div class="muted" style="padding:16px;font-size:13px">Veri yok</div>'; return; }
+        el.innerHTML = items.map(function (it) {
+            var bc = bandClass(it.value);
+            return '<div class="hbar" title="' + esc('Hat ' + it.label + ' · %' + fmt(it.value, 1) + ' · ' + it.count + ' kampanya · ' + fmt(it.saat) + ' sa') + '">' +
+                '<span class="hbar-name">' + esc(it.label) + '</span>' +
+                '<span class="hbar-track"><span class="hbar-fill ' + bc + '" style="width:' + Math.min(it.value, 100) + '%"></span></span>' +
+                '<span class="hbar-val ' + bc + '">%' + fmt(it.value, 1) + '</span>' +
+            '</div>';
+        }).join('');
     }
 
     function renderHistogram(rows) {
@@ -666,15 +689,17 @@
         setText('cntHigh', fmt(hi)); setText('cntMid', fmt(mid)); setText('cntLow', fmt(lo));
         setText('distTotal', fmt(hi + mid + lo) + ' kampanya');
 
-        var edges = [0, 80, 83, 86, 89, 91, 94, 97, 1000];
+        var edges = [0, 80, 83, 86, 89, 91, 94, 97, Infinity];
         var labels = ['<80', '80', '83', '86', '89', '91', '94', '97+'];
         var bins = []; for (var i = 0; i < edges.length - 1; i++) bins.push(0);
         rows.forEach(function (c) {
             for (var i = 0; i < edges.length - 1; i++) { if (c.verim < edges[i + 1]) { bins[i]++; break; } }
         });
         var items = bins.map(function (cnt, i) {
-            var mid2 = (edges[i] + Math.min(edges[i + 1], 100)) / 2;
-            return { label: labels[i], value: cnt, color: bandHex(mid2), sub: '%' + labels[i].replace('<', '') + ' bandı' };
+            var lo = edges[i], hi = edges[i + 1];
+            var mid2 = isFinite(hi) ? (lo + hi) / 2 : lo + 2;
+            var sub = i === 0 ? '%80 altı verim' : (isFinite(hi) ? '%' + lo + '–' + hi + ' verim' : '%' + lo + ' ve üzeri verim');
+            return { label: labels[i], value: cnt, color: bandHex(mid2), sub: sub };
         });
         barsV('histChart', items, { tipUnit: 'kampanya' });
     }
@@ -737,7 +762,7 @@
     function lineChart(id, series) {
         var el = $(id); if (!el) return;
         if (series.length < 2) { el.innerHTML = '<div class="chart-empty muted" style="padding:30px;text-align:center;font-size:13px">Trend için yeterli veri yok</div>'; return; }
-        var W = 600, H = 220, L = 40, R = 14, T = 14, B = 26, xw = W - L - R, yh = H - T - B, n = series.length;
+        var W = 1000, H = 235, L = 46, R = 18, T = 16, B = 28, xw = W - L - R, yh = H - T - B, n = series.length;
         var vals = series.map(function (s) { return s.value; });
         var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
         var yMin = Math.max(0, Math.floor((min - 3) / 5) * 5), yMax = Math.ceil((max + 3) / 5) * 5;
@@ -765,22 +790,6 @@
             g += '<rect class="tr-hit" x="' + (X(i) - slot / 2).toFixed(1) + '" y="' + T + '" width="' + slot.toFixed(1) + '" height="' + yh + '" data-tip="' + esc(series[i].tipLabel || series[i].label) + '|%' + fmt(series[i].value, 1) + '|' + esc(series[i].sub || '') + '"/>';
         }
         el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0ea5e9" stop-opacity="0"/></linearGradient></defs>' + g + '</svg>';
-        bindTips(el);
-    }
-
-    function barsH(id, items) {
-        var el = $(id); if (!el) return;
-        if (!items.length) { el.innerHTML = '<div class="chart-empty muted" style="padding:20px;font-size:13px">Veri yok</div>'; return; }
-        var W = 600, rowH = 26, pad = 8, L = 42, R = 46, bw = W - L - R, H = items.length * rowH + pad * 2;
-        var g = '';
-        items.forEach(function (it, i) {
-            var y = pad + i * rowH, w = Math.max(2, (it.value / 100) * bw), hex = bandHex(it.value);
-            g += '<text class="bar-lbl" x="0" y="' + (y + rowH / 2 + 4) + '">' + esc(it.label) + '</text>';
-            g += '<rect class="hbar-track" x="' + L + '" y="' + (y + 5) + '" width="' + bw + '" height="' + (rowH - 12) + '" rx="4"/>';
-            g += '<rect class="bar-g" x="' + L + '" y="' + (y + 5) + '" width="' + w.toFixed(1) + '" height="' + (rowH - 12) + '" rx="4" fill="' + hex + '" data-tip="' + esc(it.count + ' kampanya · ' + fmt(it.saat) + ' sa') + '|%' + fmt(it.value, 1) + '|' + esc('Hat ' + it.label) + '"/>';
-            g += '<text class="bar-val" x="' + (W - R + 6) + '" y="' + (y + rowH / 2 + 4) + '">%' + fmt(it.value, 1) + '</text>';
-        });
-        el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '">' + g + '</svg>';
         bindTips(el);
     }
 
@@ -858,7 +867,8 @@
         $('rows').innerHTML = '';
         var empty = state.filtered.length === 0;
         $('emptyState').hidden = !empty;
-        $('tableHead').style.display = empty ? 'none' : '';
+        $('tableScroll').style.display = empty ? 'none' : '';
+        $('tableScroll').scrollTop = 0;
         setupObserver();
         if (!empty) { renderChunk(); pump(); }   // ilk parca her zaman render edilir
     }
@@ -901,10 +911,11 @@
     // Sentinel gorus alanindayken kademeli doldurur (IO yalnizca gecislerde
     // tetiklendiginden, tek seferde ekran dolmazsa takilmayi onler).
     function pump() {
-        var guard = 0;
-        var limit = (window.innerHeight || 800) + 600;
-        while (state.rendered < state.filtered.length && guard < 60) {
-            if ($('scrollSentinel').getBoundingClientRect().top > limit) break;
+        var sc = $('tableScroll'), guard = 0;
+        while (state.rendered < state.filtered.length && guard < 80) {
+            var s = $('scrollSentinel').getBoundingClientRect();
+            var c = sc.getBoundingClientRect();
+            if (s.top > c.bottom + 600) break;   // sentinel panelin görünür alanının çok altında
             renderChunk();
             guard++;
         }
@@ -918,7 +929,7 @@
         }
         state.observer = new IntersectionObserver(function (entries) {
             if (entries[0].isIntersecting) pump();
-        }, { rootMargin: '600px' });
+        }, { root: $('tableScroll'), rootMargin: '600px' });
         state.observer.observe($('scrollSentinel'));
     }
 
