@@ -4,7 +4,7 @@
    - Statik dosyalar "once onbellek, arkada guncelle" mantigiyla sunulur,
      boylece yeni surum yuklediginde otomatik yenilenir.
 */
-var CACHE = 'kampanya-shell-v1';
+var CACHE = 'kampanya-shell-v2';
 var CORE = [
     './',
     './index.html',
