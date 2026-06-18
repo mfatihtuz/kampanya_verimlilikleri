@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Kampanya">
+    <meta name="description" content="Kampanya verimlilik raporlama paneli">
+    <title>Kampanya Verimlilikleri</title>
+
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ SVG IKON SETI ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-logo" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"/></symbol>
+    <symbol id="i-factory" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.9A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 13l3-3m0 0l3 3m-3-3v9"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 14l4-4m6 2a10 10 0 11-20 0 10 10 0 0120 0z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M23 6l-9.5 9.5-5-5L1 18"/></symbol>
+    <symbol id="i-spinner" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M12 3a9 9 0 109 9"/></symbol>
+    <symbol id="i-faceid" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2M9 9.5v1M15 9.5v1M12 9v3l-1 1M9 14.5a4 4 0 006 0"/></symbol>
+</svg>
+
+<!-- ============ GIRIS EKRANI ============ -->
+<main id="loginScreen" class="login-wrap" hidden>
+    <div class="login-card">
+        <div class="login-head">
+            <div class="brand-mark"><svg class="ic"><use href="#i-logo"/></svg></div>
+            <h1>Kampanya Verimlilikleri</h1>
+            <p>Üretim Karşılaştırma Paneli</p>
+        </div>
+
+        <div id="loginAlert" class="alert" hidden></div>
+
+        <!-- Hizli giris (Face ID / parmak izi) - yalnizca bu cihazda kuruluysa -->
+        <div id="bioBox" hidden>
+            <button type="button" id="bioBtn" class="btn btn-primary btn-block">
+                <svg class="ic"><use href="#i-faceid"/></svg>
+                <span class="btn-label">Face ID ile giriş</span>
+                <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+            </button>
+            <div class="or-divider"><span>ya da e-posta ile</span></div>
+        </div>
+
+        <!-- Adim 1: e-posta -->
+        <form id="formStep1" class="login-form" autocomplete="on">
+            <label class="field-label" for="identifier">Kurumsal e-posta</label>
+            <div class="field">
+                <input id="identifier" name="username" type="text" inputmode="email" autocomplete="username"
+                       placeholder="ornek@lav.com.tr" autofocus required>
+            </div>
+            <label class="checkbox">
+                <input id="rememberMe" type="checkbox" checked>
+                <span>Beni hatırla</span>
+            </label>
+            <button type="submit" class="btn btn-primary btn-block" id="step1Btn">
+                <span class="btn-label">Devam et</span>
+                <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+            </button>
+        </form>
+
+        <!-- Adim 2: dogrulama kodu -->
+        <form id="formStep2" class="login-form" hidden>
+            <p class="otp-info">
+                <span id="otpEmail" class="otp-chip"></span>
+                adresine gönderilen 6 haneli kodu girin.
+            </p>
+            <div class="field">
+                <input id="otpCode" type="text" inputmode="numeric" autocomplete="one-time-code"
+                       maxlength="6" pattern="\d*" placeholder="000000" class="otp-input">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="step2Btn">
+                <span class="btn-label">Giriş yap</span>
+                <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+            </button>
+            <button type="button" class="btn-link" id="backToStep1">Geri dön</button>
+        </form>
+
+        <button type="button" class="btn-link" id="bioRemove" hidden>Bu cihazda hızlı girişi kaldır</button>
+        <p class="login-foot">Güvenli Erişim &middot; <span id="loginYear"></span></p>
+    </div>
+</main>
+
+<!-- ============ UYGULAMA ============ -->
+<div id="appScreen" hidden>
+    <header class="appbar">
+        <div class="appbar-inner">
+            <div class="appbar-brand">
+                <div class="brand-mark sm"><svg class="ic"><use href="#i-logo"/></svg></div>
+                <div class="appbar-titles">
+                    <h1>Kampanya Verimlilik Raporu</h1>
+                    <span id="coverageNote">Üretim karşılaştırma tablosu</span>
+                </div>
+            </div>
+            <div class="appbar-actions">
+                <span class="today" id="todayDate"></span>
+                <button id="adminUpdateBtn" class="btn btn-soft" hidden>
+                    <svg class="ic"><use href="#i-upload"/></svg><span>Veri Güncelle</span>
+                </button>
+                <div class="user-chip" id="userChip" title="Aktif oturum">
+                    <span class="user-email" id="userEmail"></span>
+                </div>
+                <button id="logoutBtn" class="btn btn-danger-soft" title="Güvenli çıkış">
+                    <svg class="ic"><use href="#i-logout"/></svg><span class="hide-sm">Çıkış</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Hizli giris kurulum onerisi (destekleyen cihazlarda, bir kez) -->
+        <div id="bioOffer" class="bio-offer" hidden>
+            <div class="bio-offer-ic"><svg class="ic"><use href="#i-faceid"/></svg></div>
+            <div class="bio-offer-txt">
+                <strong>Hızlı giriş</strong>
+                <span>Bu cihazda Face ID / parmak izi ile saniyeler içinde giriş yapın.</span>
+            </div>
+            <div class="bio-offer-actions">
+                <button class="btn btn-ghost" id="bioDismiss">Şimdi değil</button>
+                <button class="btn btn-primary" id="bioEnable">
+                    <span class="btn-label">Etkinleştir</span>
+                    <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Kartlari -->
+        <section class="kpi-grid" id="kpiGrid">
+            <div class="kpi-card">
+                <div class="kpi-ic brand"><svg class="ic"><use href="#i-layers"/></svg></div>
+                <div class="kpi-body">
+                    <span class="kpi-label">Kampanya</span>
+                    <strong class="kpi-value" id="kpiCount">0</strong>
+                </div>
+                <div class="kpi-bar"><span class="brand" style="width:100%"></span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-ic green"><svg class="ic"><use href="#i-trend"/></svg></div>
+                <div class="kpi-body">
+                    <span class="kpi-label">Ort. Verim</span>
+                    <strong class="kpi-value" id="kpiVerim">%0,0</strong>
+                </div>
+                <div class="kpi-bar"><span class="green" id="kpiVerimBar" style="width:0%"></span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-ic indigo"><svg class="ic"><use href="#i-gauge"/></svg></div>
+                <div class="kpi-body">
+                    <span class="kpi-label">Ort. Devir</span>
+                    <strong class="kpi-value" id="kpiDevir">0</strong>
+                </div>
+                <div class="kpi-bar"><span class="indigo" id="kpiDevirBar" style="width:0%"></span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-ic violet"><svg class="ic"><use href="#i-clock"/></svg></div>
+                <div class="kpi-body">
+                    <span class="kpi-label">Toplam Saat</span>
+                    <strong class="kpi-value" id="kpiSaat">0</strong>
+                </div>
+                <div class="kpi-bar"><span class="violet" style="width:100%"></span></div>
+            </div>
+        </section>
+
+        <!-- Analitik serit -->
+        <section class="panel analytics" id="analyticsPanel">
+            <div class="analytics-block">
+                <div class="panel-head">
+                    <h2>Verim Dağılımı</h2>
+                    <span class="muted" id="distTotal"></span>
+                </div>
+                <div class="dist-bar" id="distBar">
+                    <span class="seg green" id="segHigh"></span>
+                    <span class="seg amber" id="segMid"></span>
+                    <span class="seg red" id="segLow"></span>
+                </div>
+                <div class="dist-legend">
+                    <span><i class="dot green"></i>Yüksek (≥%91) <b id="cntHigh">0</b></span>
+                    <span><i class="dot amber"></i>Orta (%83–91) <b id="cntMid">0</b></span>
+                    <span><i class="dot red"></i>Düşük (&lt;%83) <b id="cntLow">0</b></span>
+                </div>
+            </div>
+            <div class="analytics-block">
+                <div class="panel-head">
+                    <h2>Yıllara Göre Ortalama Verim</h2>
+                </div>
+                <div class="year-chart" id="yearChart"></div>
+            </div>
+        </section>
+
+        <!-- Filtreler + Tablo -->
+        <section class="panel">
+            <div class="filters">
+                <div class="field has-icon">
+                    <svg class="ic field-ic"><use href="#i-box"/></svg>
+                    <input type="text" id="fKalem" placeholder="Ürün ara...">
+                </div>
+                <div class="field has-icon">
+                    <svg class="ic field-ic"><use href="#i-factory"/></svg>
+                    <select id="fHat"><option value="">Tüm hatlar</option></select>
+                </div>
+                <div class="field has-icon">
+                    <svg class="ic field-ic"><use href="#i-calendar"/></svg>
+                    <select id="fYil"><option value="">Tüm yıllar</option></select>
+                </div>
+                <div class="field has-icon">
+                    <svg class="ic field-ic"><use href="#i-trend"/></svg>
+                    <select id="fBand">
+                        <option value="">Tüm verim</option>
+                        <option value="high">Yüksek (≥%91)</option>
+                        <option value="mid">Orta (%83–91)</option>
+                        <option value="low">Düşük (&lt;%83)</option>
+                    </select>
+                </div>
+                <button class="btn btn-ghost" id="clearBtn">Temizle</button>
+                <button class="btn btn-success" id="exportBtn">
+                    <svg class="ic"><use href="#i-download"/></svg><span>Excel'e Aktar</span>
+                </button>
+            </div>
+
+            <div class="result-meta">
+                <span id="resultCount">0 kampanya</span>
+                <span class="sort-hint">
+                    Sırala:
+                    <select id="sortBy">
+                        <option value="kalem">Ürün (A-Z)</option>
+                        <option value="verim_desc">Verim (Yüksek→Düşük)</option>
+                        <option value="verim_asc">Verim (Düşük→Yüksek)</option>
+                        <option value="saat_desc">Saat (Çok→Az)</option>
+                        <option value="date_desc">Tarih (Yeni→Eski)</option>
+                    </select>
+                </span>
+            </div>
+
+            <!-- Masaüstü tablo başlığı -->
+            <div class="table-head" id="tableHead">
+                <span class="col-kalem">Kampanya</span>
+                <span class="col-date">Başlangıç</span>
+                <span class="col-date">Bitiş</span>
+                <span class="col-num">Verim</span>
+                <span class="col-num">Adetsel</span>
+                <span class="col-num">Zamansal</span>
+                <span class="col-num">Saat</span>
+                <span class="col-num">Devir</span>
+            </div>
+
+            <!-- Liste (kademeli yüklenir) -->
+            <div class="rows" id="rows" role="list"></div>
+            <div id="scrollSentinel" style="height:1px"></div>
+
+            <!-- Bos durum -->
+            <div class="empty" id="emptyState" hidden>
+                <div class="empty-ic"><svg class="ic"><use href="#i-search"/></svg></div>
+                <h3>Sonuç bulunamadı</h3>
+                <p>Aradığınız kriterlere uygun kayıt yok. Filtreleri temizleyip tekrar deneyin.</p>
+                <button class="btn btn-primary" id="clearBtn2">Filtreleri temizle</button>
+            </div>
+
+            <!-- Yukleniyor -->
+            <div class="loading" id="loadingState">
+                <svg class="ic spin lg"><use href="#i-spinner"/></svg>
+                <span>Veriler yükleniyor...</span>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        Kurumsal Üretim Raporlama Sistemi &middot; <span id="footYear"></span>
+    </footer>
+</div>
+
+<!-- ============ YONETICI: VERI GUNCELLEME MODALI ============ -->
+<div id="uploadModal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
+        <div class="modal-head">
+            <h2 id="uploadTitle">Veri Güncelle</h2>
+            <button class="icon-btn" data-close aria-label="Kapat"><svg class="ic"><use href="#i-close"/></svg></button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-desc">
+                Yeni üretim Excel dosyasını (<code>.xlsx</code>) seçin. Yükleme tamamlanınca
+                tüm kullanıcılar anında güncel veriyi görür. Sütun düzeni aynı kalmalıdır:
+                <span class="muted">Kalem · Yıl · Hat · Tarih · Saat · Devir · Adetsel · Zamansal · Verim</span>
+            </p>
+
+            <label id="dropZone" class="dropzone" for="fileInput">
+                <svg class="ic lg"><use href="#i-upload"/></svg>
+                <strong>Dosyayı buraya sürükleyin</strong>
+                <span>ya da seçmek için tıklayın</span>
+                <input id="fileInput" type="file" accept=".xlsx" hidden>
+            </label>
+
+            <div id="fileChosen" class="file-chosen" hidden>
+                <svg class="ic"><use href="#i-box"/></svg>
+                <span id="fileName"></span>
+            </div>
+
+            <div id="uploadAlert" class="alert" hidden></div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn btn-ghost" data-close>Vazgeç</button>
+            <button class="btn btn-primary" id="doUploadBtn" disabled>
+                <span class="btn-label">Yükle ve Güncelle</span>
+                <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Bildirim (toast) -->
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

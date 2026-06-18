@@ -1,0 +1,29 @@
+# Kampanya Verimlilikleri - Apache ayarlari (paylasimli hosting / cPanel)
+# Not: Sunucunuz Nginx ise bu dosya yok sayilir; README'deki Nginx notuna bakin.
+
+# Dizin listelemeyi kapat
+Options -Indexes
+
+# Ham veri dosyasina dogrudan (giris yapmadan) erisimi engelle.
+# Veriye yalnizca giris yaptiktan sonra api.php uzerinden erisilir.
+<FilesMatch "\.xlsx$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# .webmanifest dogru MIME tipiyle sunulsun
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
+# Temel guvenlik basliklari
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
