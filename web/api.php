@@ -109,6 +109,11 @@ function clear_remember_cookie()
 
 function login_user($email, $isAdmin, $remember)
 {
+    // Oturum sabitleme (session fixation) saldirisina karsi: yetki degisiminde
+    // oturum kimligini yenile.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true);
+    }
     $_SESSION['auth'] = true;
     $_SESSION['email'] = $email;
     $_SESSION['is_admin'] = (bool) $isAdmin;
@@ -187,13 +192,12 @@ function wa_save($data)
 }
 
 /** clientDataJSON dogrulamasi: tip, challenge ve origin */
-function wa_check_clientdata($clientDataJson, $expectedType)
+function wa_check_clientdata($clientDataJson, $expectedType, $expectedChallenge)
 {
     $cd = json_decode($clientDataJson, true);
     if (!is_array($cd)) return 'clientData';
     if (($cd['type'] ?? '') !== $expectedType) return 'type';
-    $chal = $_SESSION['wa_challenge'] ?? '';
-    if ($chal === '' || !hash_equals($chal, (string) ($cd['challenge'] ?? ''))) return 'challenge';
+    if ($expectedChallenge === '' || !hash_equals($expectedChallenge, (string) ($cd['challenge'] ?? ''))) return 'challenge';
     if (($cd['origin'] ?? '') !== wa_origin()) return 'origin';
     return true;
 }
@@ -235,6 +239,11 @@ switch ($action) {
 
         // Kurumsal e-posta -> dogrulama kodu gonder
         if (str_ends_with(mb_strtolower($identifier), ALLOWED_DOMAIN)) {
+            // Guvenlik: gecerli ve tek satirlik bir e-posta olmali. Bu, SMTP/
+            // baslik enjeksiyonunu (CRLF ile RCPT/To manipulasyonu) engeller.
+            if (strpbrk($identifier, "\r\n") !== false || !filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+                json_out(['error' => 'domain', 'message' => 'Geçerli bir kurumsal e-posta adresi girin.'], 422);
+            }
             $otp = random_int(100000, 999999);
             $_SESSION['otp_code'] = (string) $otp;
             $_SESSION['otp_time'] = time();
@@ -249,10 +258,11 @@ switch ($action) {
             $smtp = new SimpleSMTP();
             $sent = $smtp->send($identifier, $subject, $message, $headers);
             if (!$sent) {
+                // Detayli SMTP hatasi istemciye sizdirilmaz; sunucu gunlugune yazilir.
+                error_log('SMTP gonderim hatasi: ' . $smtp->getLastError());
                 json_out([
                     'error' => 'mail',
-                    'message' => 'Dogrulama e-postasi gonderilemedi. Lutfen tekrar deneyin.',
-                    'detail' => $smtp->getLastError(),
+                    'message' => 'Doğrulama e-postası gönderilemedi. Lütfen tekrar deneyin.',
                 ], 502);
             }
             json_out(['status' => 'otp', 'email' => $identifier]);
@@ -392,7 +402,9 @@ switch ($action) {
             json_out(['error' => 'admin_no_bio'], 403);
         }
         $in = body_json();
-        $err = wa_check_clientdata(b64url_decode($in['clientDataJSON'] ?? ''), 'webauthn.create');
+        $chal = $_SESSION['wa_challenge'] ?? '';
+        unset($_SESSION['wa_challenge']); // tek kullanimlik
+        $err = wa_check_clientdata(b64url_decode($in['clientDataJSON'] ?? ''), 'webauthn.create', $chal);
         if ($err !== true) json_out(['error' => 'verify', 'detail' => $err], 422);
         if (empty($in['id']) || empty($in['publicKey'])) json_out(['error' => 'missing'], 422);
         $store = wa_load();
@@ -404,7 +416,6 @@ switch ($action) {
             'created' => date('c'),
         ];
         wa_save($store);
-        unset($_SESSION['wa_challenge']);
         json_out(['status' => 'ok']);
         break;
 
@@ -430,16 +441,20 @@ switch ($action) {
         $cred = $store[$id];
 
         $clientDataJson = b64url_decode($in['clientDataJSON'] ?? '');
-        $err = wa_check_clientdata($clientDataJson, 'webauthn.get');
+        $chal = $_SESSION['wa_challenge'] ?? '';
+        unset($_SESSION['wa_challenge']); // tek kullanimlik: ayni assertion tekrar oynatilamaz
+        $err = wa_check_clientdata($clientDataJson, 'webauthn.get', $chal);
         if ($err !== true) json_out(['error' => 'verify', 'detail' => $err], 422);
 
         $authData = b64url_decode($in['authenticatorData'] ?? '');
         $sig = b64url_decode($in['signature'] ?? '');
         if (strlen($authData) < 37) json_out(['error' => 'authdata'], 422);
 
-        // Bayraklar: UP (kullanici mevcut) ve UV (kullanici dogrulandi)
+        // Bayraklar: UP (kullanici mevcut) ve UV (kullanici dogrulandi) zorunlu.
+        // userVerification:'required' istendigi icin biyometrik/PIN dogrulamasi sart.
         $flags = ord($authData[32]);
         if (!($flags & 0x01)) json_out(['error' => 'user_presence'], 422);
+        if (!($flags & 0x04)) json_out(['error' => 'user_verification'], 422);
 
         // rpIdHash dogrulamasi
         if (!hash_equals(hash('sha256', wa_rpid(), true), substr($authData, 0, 32))) {
@@ -457,7 +472,6 @@ switch ($action) {
 
         // Face ID girisi ASLA yonetici degildir (yalnizca goruntuleme).
         login_user($cred['email'], false, false);
-        unset($_SESSION['wa_challenge']);
         json_out(['status' => 'ok']);
         break;
 

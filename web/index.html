@@ -145,65 +145,90 @@
             </div>
         </div>
 
-        <!-- KPI Kartlari -->
+        <!-- Otomatik icgoru seridi -->
+        <section class="insight-strip" id="insightStrip" hidden></section>
+
+        <!-- KPI Kartlari (yil bazli degisim + mini trend) -->
         <section class="kpi-grid" id="kpiGrid">
             <div class="kpi-card">
-                <div class="kpi-ic brand"><svg class="ic"><use href="#i-layers"/></svg></div>
-                <div class="kpi-body">
-                    <span class="kpi-label">Kampanya</span>
-                    <strong class="kpi-value" id="kpiCount">0</strong>
+                <div class="kpi-top">
+                    <div class="kpi-ic brand"><svg class="ic"><use href="#i-layers"/></svg></div>
+                    <span class="kpi-delta" id="kpiCountDelta" hidden></span>
                 </div>
-                <div class="kpi-bar"><span class="brand" style="width:100%"></span></div>
+                <span class="kpi-label">Kampanya</span>
+                <strong class="kpi-value" id="kpiCount">0</strong>
+                <div class="kpi-spark" id="kpiCountSpark"></div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-ic green"><svg class="ic"><use href="#i-trend"/></svg></div>
-                <div class="kpi-body">
-                    <span class="kpi-label">Ort. Verim</span>
-                    <strong class="kpi-value" id="kpiVerim">%0,0</strong>
+                <div class="kpi-top">
+                    <div class="kpi-ic green"><svg class="ic"><use href="#i-trend"/></svg></div>
+                    <span class="kpi-delta" id="kpiVerimDelta" hidden></span>
                 </div>
-                <div class="kpi-bar"><span class="green" id="kpiVerimBar" style="width:0%"></span></div>
+                <span class="kpi-label">Ort. Verim</span>
+                <strong class="kpi-value" id="kpiVerim">%0,0</strong>
+                <div class="kpi-spark" id="kpiVerimSpark"></div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-ic indigo"><svg class="ic"><use href="#i-gauge"/></svg></div>
-                <div class="kpi-body">
-                    <span class="kpi-label">Ort. Devir</span>
-                    <strong class="kpi-value" id="kpiDevir">0</strong>
+                <div class="kpi-top">
+                    <div class="kpi-ic indigo"><svg class="ic"><use href="#i-gauge"/></svg></div>
+                    <span class="kpi-delta" id="kpiDevirDelta" hidden></span>
                 </div>
-                <div class="kpi-bar"><span class="indigo" id="kpiDevirBar" style="width:0%"></span></div>
+                <span class="kpi-label">Ort. Devir</span>
+                <strong class="kpi-value" id="kpiDevir">0</strong>
+                <div class="kpi-spark" id="kpiDevirSpark"></div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-ic violet"><svg class="ic"><use href="#i-clock"/></svg></div>
-                <div class="kpi-body">
-                    <span class="kpi-label">Toplam Saat</span>
-                    <strong class="kpi-value" id="kpiSaat">0</strong>
+                <div class="kpi-top">
+                    <div class="kpi-ic violet"><svg class="ic"><use href="#i-clock"/></svg></div>
+                    <span class="kpi-delta" id="kpiSaatDelta" hidden></span>
                 </div>
-                <div class="kpi-bar"><span class="violet" style="width:100%"></span></div>
+                <span class="kpi-label">Toplam Saat</span>
+                <strong class="kpi-value" id="kpiSaat">0</strong>
+                <div class="kpi-spark" id="kpiSaatSpark"></div>
             </div>
         </section>
 
-        <!-- Analitik serit -->
-        <section class="panel analytics" id="analyticsPanel">
-            <div class="analytics-block">
+        <!-- Grafikler: Aylik trend + Hat karsilastirmasi -->
+        <section class="chart-grid">
+            <div class="panel chart-card">
+                <div class="panel-head">
+                    <h2>Aylık Verim Trendi</h2>
+                    <span class="muted" id="trendNote"></span>
+                </div>
+                <div class="chart" id="trendChart"></div>
+            </div>
+            <div class="panel chart-card">
+                <div class="panel-head">
+                    <h2>Hatlara Göre Verim</h2>
+                    <span class="muted">ağırlıklı ortalama</span>
+                </div>
+                <div class="chart" id="lineCompareChart"></div>
+            </div>
+        </section>
+
+        <!-- Dagilim + Urun performansi -->
+        <section class="chart-grid">
+            <div class="panel chart-card">
                 <div class="panel-head">
                     <h2>Verim Dağılımı</h2>
                     <span class="muted" id="distTotal"></span>
                 </div>
-                <div class="dist-bar" id="distBar">
-                    <span class="seg green" id="segHigh"></span>
-                    <span class="seg amber" id="segMid"></span>
-                    <span class="seg red" id="segLow"></span>
-                </div>
+                <div class="chart sm" id="histChart"></div>
                 <div class="dist-legend">
                     <span><i class="dot green"></i>Yüksek (≥%91) <b id="cntHigh">0</b></span>
                     <span><i class="dot amber"></i>Orta (%83–91) <b id="cntMid">0</b></span>
                     <span><i class="dot red"></i>Düşük (&lt;%83) <b id="cntLow">0</b></span>
                 </div>
             </div>
-            <div class="analytics-block">
+            <div class="panel">
                 <div class="panel-head">
-                    <h2>Yıllara Göre Ortalama Verim</h2>
+                    <h2>Ürün Performansı</h2>
+                    <div class="seg-toggle" id="lbToggle">
+                        <button type="button" data-lb="top" class="active">En İyi</button>
+                        <button type="button" data-lb="bottom">En Düşük</button>
+                    </div>
                 </div>
-                <div class="year-chart" id="yearChart"></div>
+                <div class="leaderboard" id="leaderboard"></div>
             </div>
         </section>
 
@@ -251,21 +276,33 @@
                 </span>
             </div>
 
-            <!-- Masaüstü tablo başlığı -->
+            <!-- Masaüstü tablo başlığı (tıklanabilir sıralama) -->
             <div class="table-head" id="tableHead">
-                <span class="col-kalem">Kampanya</span>
-                <span class="col-date">Başlangıç</span>
+                <span class="col-kalem th-sort" data-sort="kalem">Kampanya<i class="sort-ar"></i></span>
+                <span class="col-date th-sort" data-sort="date">Başlangıç<i class="sort-ar"></i></span>
                 <span class="col-date">Bitiş</span>
-                <span class="col-num">Verim</span>
-                <span class="col-num">Adetsel</span>
-                <span class="col-num">Zamansal</span>
-                <span class="col-num">Saat</span>
-                <span class="col-num">Devir</span>
+                <span class="col-num th-sort" data-sort="verim">Verim<i class="sort-ar"></i></span>
+                <span class="col-num th-sort" data-sort="adetsel">Adetsel<i class="sort-ar"></i></span>
+                <span class="col-num th-sort" data-sort="zamansal">Zamansal<i class="sort-ar"></i></span>
+                <span class="col-num th-sort" data-sort="saat">Saat<i class="sort-ar"></i></span>
+                <span class="col-num th-sort" data-sort="devir">Devir<i class="sort-ar"></i></span>
             </div>
 
             <!-- Liste (kademeli yüklenir) -->
             <div class="rows" id="rows" role="list"></div>
             <div id="scrollSentinel" style="height:1px"></div>
+
+            <!-- Toplam / agirlikli ortalama satiri (filtreye gore) -->
+            <div class="table-foot" id="tableFoot" hidden>
+                <span class="col-kalem" id="footLabel">Toplam</span>
+                <span class="col-date"></span>
+                <span class="col-date"></span>
+                <span class="col-num" id="footVerim"></span>
+                <span class="col-num" id="footAdetsel"></span>
+                <span class="col-num" id="footZamansal"></span>
+                <span class="col-num" id="footSaat"></span>
+                <span class="col-num" id="footDevir"></span>
+            </div>
 
             <!-- Bos durum -->
             <div class="empty" id="emptyState" hidden>
@@ -326,6 +363,30 @@
         </div>
     </div>
 </div>
+
+<!-- ============ URUN DETAY (DRILL-DOWN) MODALI ============ -->
+<div id="detailModal" class="modal" hidden>
+    <div class="modal-backdrop" data-dclose></div>
+    <div class="modal-card lg" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <div class="modal-head">
+            <div>
+                <h2 id="detailTitle">Ürün Detayı</h2>
+                <span class="muted" id="detailSub"></span>
+            </div>
+            <button class="icon-btn" data-dclose aria-label="Kapat"><svg class="ic"><use href="#i-close"/></svg></button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-kpis" id="detailKpis"></div>
+            <div class="panel-head"><h2>Verim Trendi</h2></div>
+            <div class="chart sm" id="detailChart"></div>
+            <div class="panel-head"><h2>Kampanyalar</h2></div>
+            <div class="detail-list" id="detailList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Grafik ipucu (tooltip) -->
+<div id="chartTip" class="chart-tip" hidden></div>
 
 <!-- Bildirim (toast) -->
 <div id="toast" class="toast" hidden></div>
