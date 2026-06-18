@@ -316,3 +316,16 @@ body{
     .appbar-inner{padding:0 14px;gap:8px}
     .row{grid-template-columns:1fr 1fr}
 }
+
+/* ===================================================================
+   RENDER DAYANIKLILIGI (cihaz/tarayici uyumu)
+   - Acilir liste (select) yazisi tek satir; tasarsa "..." ile kisilir,
+     boylece hicbir cihazda yarim/kesik gorunmez.
+   - Ikonlar dikeyde ortalanir (taban hizasi kaynakli kesilmeyi onler).
+   - Metin girisleri 16px: iOS'ta odaklaninca sayfa yakinlasmaz.
+   =================================================================== */
+.ic{vertical-align:middle}
+.field input,.field select{line-height:1.4}
+.field input,.field.has-icon input{font-size:16px}
+.field.has-icon select{font-size:15px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+select option{color:var(--s800)}

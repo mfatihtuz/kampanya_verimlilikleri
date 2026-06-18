@@ -75,6 +75,21 @@
         });
     }
 
+    // Bazi eski tarayicilar (ozellikle eski iOS Safari) <use href="..."> yerine
+    // yalnizca xlink:href tanir; ikonlarin her yerde gorunmesi icin ikisini de ekle.
+    var XLINK = 'http://www.w3.org/1999/xlink';
+    function fixUseHrefs(root) {
+        try {
+            var uses = (root || document).getElementsByTagName('use');
+            for (var i = 0; i < uses.length; i++) {
+                var h = uses[i].getAttribute('href');
+                if (h && !uses[i].getAttributeNS(XLINK, 'href')) {
+                    uses[i].setAttributeNS(XLINK, 'href', h);
+                }
+            }
+        } catch (e) {}
+    }
+
     function toast(msg, type) {
         var t = $('toast');
         t.textContent = msg;
@@ -138,6 +153,7 @@
         prefillIdentifier();
 
         bindEvents();
+        fixUseHrefs();   // statik ikonlar (eski tarayici uyumlulugu)
         registerSW();
 
         api('session').then(function (res) {
@@ -580,6 +596,7 @@
         var html = '';
         for (var i = state.rendered; i < end; i++) html += rowHTML(state.filtered[i]);
         $('rows').insertAdjacentHTML('beforeend', html);
+        fixUseHrefs($('rows'));   // dinamik satir ikonlari (eski tarayici uyumlulugu)
         state.rendered = end;
     }
 
