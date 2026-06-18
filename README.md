@@ -119,9 +119,25 @@ için ardışık günler bir "kampanya" olarak gruplanır ve değerler **üretim
 göre ağırlıklı ortalama** ile hesaplanır (verim, adetsel, zamansal, devir).
 Böylece alıştığınız sayılar değişmez.
 
-Arayüzde ek olarak: canlı KPI kartları, verim dağılımı, yıllara göre ortalama
-verim, ürün/hat/yıl/verim filtreleri, sıralama ve filtrelenmiş veriyi
-**Excel'e aktarma** bulunur.
+### Panel (BI) özellikleri
+
+Kurumsal bir analiz panosu olarak şunları sunar:
+
+- **Otomatik içgörü şeridi** — filtreye göre öne çıkan 2-3 sonuç (yıllık değişim,
+  en iyi hat, hedef altı oranı).
+- **KPI kartları** — kampanya sayısı, ağırlıklı ortalama verim, ortalama devir,
+  toplam saat; verim/devir için **önceki yıla göre değişim** ve her kartta **mini
+  trend (sparkline)**.
+- **Aylık verim trendi** (alan/çizgi grafiği), **hatlara göre verim** (sıralı
+  karşılaştırma), **verim dağılımı** (histogram) — hepsi ipucu (tooltip) ile.
+- **Ürün performansı** — en iyi / en düşük 6 ürün listesi.
+- **Filtreler** (ürün/hat/yıl/verim bandı), **tıklanabilir sütun başlıklarıyla
+  sıralama**, alttaki **toplam/ağırlıklı ortalama satırı**.
+- **Ürün detayı (drill-down)** — bir satıra ya da ürüne tıklayınca o ürünün
+  KPI'ları, verim trendi ve tüm kampanyaları açılır.
+- Filtrelenmiş veriyi **Excel'e aktarma**, **çevrimdışı** çalışma.
+
+Tüm grafikler ve KPI'lar uygulanan filtreye göre **anlık** yeniden hesaplanır.
 
 ---
 

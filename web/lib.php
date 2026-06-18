@@ -124,34 +124,45 @@ class CampaignAnalyzer
         'EKI' => '10', 'EKİ' => '10', 'KAS' => '11', 'ARA' => '12',
     ];
 
+    /** Gecerli ise 'Y-m-d' dondurur, degilse null (imkansiz tarihleri eler). */
+    private function mkDate($y, $m, $d)
+    {
+        $y = (int) $y; $m = (int) $m; $d = (int) $d;
+        if (!checkdate($m, $d, $y)) {
+            return null;
+        }
+        return sprintf('%04d-%02d-%02d', $y, $m, $d);
+    }
+
     private function parseDate($dateVal)
     {
         $dateVal = trim($dateVal);
         if ($dateVal === '') {
             return null;
         }
-        // Excel seri numarasi (gun) ise tarihe cevir
-        if (is_numeric($dateVal) && $dateVal > 10000) {
+        // Excel seri numarasi (gun) ise tarihe cevir. Makul aralik disindaki
+        // buyuk sayilar (barkod/kimlik vb.) tarih sayilmaz.
+        if (is_numeric($dateVal) && (float) $dateVal >= 10000 && (float) $dateVal <= 80000) {
             return gmdate('Y-m-d', ((int) $dateVal - 25569) * 86400);
         }
         $dateStr = mb_strtoupper($dateVal, 'UTF-8');
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr)) {
-            return $dateStr;
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $dateStr, $mm)) {
+            return $this->mkDate($mm[1], $mm[2], $mm[3]);
         }
         if (strpos($dateStr, '-') !== false) {
             $parts = explode('-', $dateStr);
             if (count($parts) === 3) {
                 if (is_numeric($parts[1])) {
-                    return $parts[2] . '-' . str_pad($parts[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+                    return $this->mkDate($parts[2], $parts[1], $parts[0]);
                 }
                 $month = isset($this->months[$parts[1]]) ? $this->months[$parts[1]] : '01';
-                return $parts[2] . '-' . $month . '-' . str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+                return $this->mkDate($parts[2], $month, $parts[0]);
             }
         }
         if (strpos($dateStr, '.') !== false) {
             $parts = explode('.', $dateStr);
             if (count($parts) === 3) {
-                return $parts[2] . '-' . str_pad($parts[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+                return $this->mkDate($parts[2], $parts[1], $parts[0]);
             }
         }
         return null;
