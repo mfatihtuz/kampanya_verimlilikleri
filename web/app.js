@@ -50,6 +50,21 @@
 
     var lower = function (s) { return (s || '').toLocaleLowerCase('tr-TR'); };
 
+    // Giris alanini YALNIZCA kayitli e-posta ile doldur (yoksa bos birak).
+    // Yonetici sifresi hicbir zaman alanda gosterilmez/on-doldurulmaz.
+    function prefillIdentifier() {
+        var savedId = null;
+        try {
+            savedId = localStorage.getItem(STORE_ID);
+            if (savedId && savedId.indexOf('@') === -1) {
+                localStorage.removeItem(STORE_ID); // eski surumden kalmis gecersiz deger
+                savedId = null;
+            }
+        } catch (e) {}
+        var el = $('identifier');
+        if (el) el.value = savedId || '';
+    }
+
     /* Verim bandi: web sitesindeki esiklerle ayni (>=91 yuksek, >=83 orta) */
     function band(v) { return v >= 91 ? 'high' : (v >= 83 ? 'mid' : 'low'); }
     function bandClass(v) { return v >= 91 ? 'green' : (v >= 83 ? 'amber' : 'red'); }
@@ -115,13 +130,12 @@
         $('footYear').textContent = y;
         $('todayDate').textContent = new Date().toLocaleDateString('tr-TR');
 
-        // "Beni hatirla" on-doldurma
+        // "Beni hatirla" tercihi (kutu durumu)
         try {
-            var savedId = localStorage.getItem(STORE_ID);
             var pref = localStorage.getItem(STORE_REMEMBER);
-            if (savedId) $('identifier').value = savedId;
             $('rememberMe').checked = pref === null ? true : pref === '1';
         } catch (e) {}
+        prefillIdentifier();
 
         bindEvents();
         registerSW();
@@ -141,6 +155,8 @@
         $('formStep1').hidden = false;
         $('formStep2').hidden = true;
         hideAlert($('loginAlert'));
+        prefillIdentifier();   // yazilan sifre ekranda birakilmaz
+        $('otpCode').value = '';
         updateBioUI();
         setTimeout(function () { try { $('identifier').focus(); } catch (e) {} }, 50);
     }
@@ -161,8 +177,13 @@
         try {
             var remember = $('rememberMe').checked;
             localStorage.setItem(STORE_REMEMBER, remember ? '1' : '0');
-            if (remember && identifier) localStorage.setItem(STORE_ID, identifier);
-            if (!remember) localStorage.removeItem(STORE_ID);
+            // Guvenlik: YALNIZCA e-posta hatirlanir. Yonetici sifresi (veya '@'
+            // icermeyen herhangi bir deger) hicbir zaman saklanmaz/gosterilmez.
+            if (remember && identifier && identifier.indexOf('@') !== -1) {
+                localStorage.setItem(STORE_ID, identifier);
+            } else {
+                localStorage.removeItem(STORE_ID);
+            }
         } catch (e) {}
     }
 
@@ -342,6 +363,9 @@
 
     function maybeOfferBio() {
         if (!bioSupported()) return;
+        // Face ID yalnizca calisan (goruntuleme) hesaplari icindir; yoneticiye
+        // hizli giris onerilmez (veri guncelleme sifreye baglidir).
+        if (state.session && state.session.isAdmin) return;
         if (getBioCred()) return;             // zaten kurulu
         var asked; try { asked = localStorage.getItem(STORE_BIO_ASK); } catch (e) {}
         if (asked === '1') return;            // daha once soruldu

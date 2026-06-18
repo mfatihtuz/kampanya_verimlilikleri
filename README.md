@@ -49,15 +49,28 @@ Bu kadar. `https://siteniz/` adresini açtığınızda giriş ekranı gelir.
   gelen 6 haneli kodu girip giriş yapar.
 - **Beni hatırla:** İşaretliyken bir sonraki açılışta tekrar kod istenmez ve
   e-posta alanı hazır gelir — diğer uygulamalardaki gibi sıradan davranır.
-- **Face ID / parmak izi (hızlı giriş):** Destekleyen cihazlarda, ilk girişten
-  sonra "Etkinleştir" denilerek kurulur. Sonraki açılışlarda giriş ekranındaki
-  **"Face ID ile giriş"** düğmesiyle saniyeler içinde girilir. Standart
-  **passkey (WebAuthn)** teknolojisi kullanılır; doğrulama sunucuda imzayla
-  yapılır. Cihaz desteklemezse bu seçenek hiç görünmez, e-posta ile giriş
+- **Face ID / parmak izi (hızlı giriş):** **Çalışanlar için** bir kolaylıktır.
+  Çalışan e-posta ile giriş yaptıktan sonra "Etkinleştir" diyerek kurar; sonraki
+  açılışlarda giriş ekranındaki **"Face ID ile giriş"** düğmesiyle saniyeler
+  içinde girer. Standart **passkey (WebAuthn)** kullanılır; doğrulama sunucuda
+  imzayla yapılır. Cihaz desteklemezse seçenek hiç görünmez, e-posta ile giriş
   her zaman çalışır.
 
   > Not: Face ID/parmak izi yalnızca **HTTPS** üzerinde (veya `localhost`)
   > çalışır. Canlıda sitenizin HTTPS olması yeterlidir.
+
+### Güvenlik modeli (önemli)
+
+- **"Veri Güncelle" yalnızca yönetici şifresiyle giriş yapıldığında** etkindir.
+  Bu yetki sunucu tarafında zorunludur; gizlemekle kalmaz, sunucu da yetkisiz
+  güncellemeyi reddeder.
+- **Yönetici oturumu kalıcı değildir** ve **Face ID asla yönetici yetkisi
+  vermez.** Yani "beni hatırla" çerezi veya Face ID ile giren hiç kimse veri
+  güncelleyemez — güncelleme için her seferinde şifreyle giriş gerekir.
+- **Çalışanlar yalnızca görüntüler** ve Face ID'yi ancak e-posta ile giriş
+  yaptıktan sonra kurabilir. Yönetici hesabına Face ID önerilmez.
+- **Yönetici şifresi hiçbir aşamada ekranda gösterilmez/önbelleğe alınmaz;**
+  yalnızca kurumsal e-posta (@ içeren) "beni hatırla" ile hatırlanır.
 
 İzin verilen e-posta uzantısı ve diğer ayarlar `web/config.php` içindedir.
 
@@ -67,9 +80,10 @@ Bu kadar. `https://siteniz/` adresini açtığınızda giriş ekranı gelir.
 
 Excel'i sunucuya elle atmanıza gerek yok. Bilgisayarınızdan:
 
-1. Uygulamayı açıp giriş yapın.
+1. Uygulamayı açıp **yönetici şifrenizle giriş yapın** (güvenlik gereği bu işlem
+   her zaman şifreyle girişi gerektirir; Face ID veya hatırlanan oturum yetmez).
 2. Sağ üstteki **"Veri Güncelle"** düğmesine tıklayın.
-   *(Bu düğme yalnızca yönetici girişinde görünür.)*
+   *(Bu düğme yalnızca yönetici şifresiyle giriş yapıldığında görünür.)*
 3. Yeni `uretim_verileri.xlsx` dosyasını sürükleyin ya da seçin → **Yükle ve
    Güncelle**.
 

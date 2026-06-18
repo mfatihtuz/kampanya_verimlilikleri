@@ -57,12 +57,14 @@ function start_app_session()
 function b64url_encode($s) { return rtrim(strtr(base64_encode($s), '+/', '-_'), '='); }
 function b64url_decode($s) { return base64_decode(strtr($s, '-_', '+/')); }
 
-/** Imzali "beni hatirla" jetonu uretir */
-function make_remember_token($email, $isAdmin)
+/** Imzali "beni hatirla" jetonu uretir.
+ *  Guvenlik: jeton ASLA yonetici yetkisi tasimaz. Kalici oturum yalnizca
+ *  goruntuleme (calisan) seviyesindedir; "Veri Guncelle" icin her seferinde
+ *  yonetici sifresiyle giris gerekir. */
+function make_remember_token($email)
 {
     $payload = [
         'e' => $email,
-        'a' => $isAdmin ? 1 : 0,
         'x' => time() + REMEMBER_DAYS * 86400,
     ];
     $p = b64url_encode(json_encode($payload, JSON_UNESCAPED_UNICODE));
@@ -82,11 +84,11 @@ function verify_remember_token($token)
     return $payload;
 }
 
-function set_remember_cookie($email, $isAdmin)
+function set_remember_cookie($email)
 {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
         || (($_SERVER['SERVER_PORT'] ?? '') == 443);
-    setcookie('lav_remember', make_remember_token($email, $isAdmin), [
+    setcookie('lav_remember', make_remember_token($email), [
         'expires' => time() + REMEMBER_DAYS * 86400,
         'path' => '/',
         'httponly' => true,
@@ -110,12 +112,16 @@ function login_user($email, $isAdmin, $remember)
     $_SESSION['auth'] = true;
     $_SESSION['email'] = $email;
     $_SESSION['is_admin'] = (bool) $isAdmin;
-    if ($remember) {
-        set_remember_cookie($email, $isAdmin);
+    // Guvenlik: Yonetici oturumu KALICI YAPILMAZ. "Veri Guncelle" yetkisi
+    // yalnizca, o oturumda sifreyle giris yapildiginda gecerlidir. Yalnizca
+    // calisan (e-posta) girisleri "beni hatirla" ile kalici olabilir.
+    if ($remember && !$isAdmin) {
+        set_remember_cookie($email);
     }
 }
 
-/** Oturum yoksa "beni hatirla" cerezinden geri yukler */
+/** Oturum yoksa "beni hatirla" cerezinden geri yukler.
+ *  Kalici oturum ASLA yonetici degildir (yalnizca goruntuleme). */
 function ensure_session_from_cookie()
 {
     if (!empty($_SESSION['auth'])) return;
@@ -124,7 +130,7 @@ function ensure_session_from_cookie()
         if ($payload) {
             $_SESSION['auth'] = true;
             $_SESSION['email'] = $payload['e'];
-            $_SESSION['is_admin'] = !empty($payload['a']);
+            $_SESSION['is_admin'] = false;
         }
     }
 }
@@ -348,9 +354,14 @@ switch ($action) {
         json_out(['status' => 'ok', 'summary' => $ds['summary']]);
         break;
 
-    /* ---- WebAuthn: kayit secenekleri (giris yapmis kullanici) ---- */
+    /* ---- WebAuthn: kayit secenekleri (yalnizca e-posta ile giris yapmis calisan) ---- */
     case 'webauthn_reg_options':
         require_auth();
+        // Guvenlik: Face ID yalnizca calisan (goruntuleme) hesaplari icindir.
+        // Yonetici hesabi hizli giris kuramaz; veri guncelleme sifreye baglidir.
+        if (!empty($_SESSION['is_admin'])) {
+            json_out(['error' => 'admin_no_bio', 'message' => 'Yönetici hesabı için hızlı giriş kullanılmaz.'], 403);
+        }
         $challenge = b64url_encode(random_bytes(32));
         $_SESSION['wa_challenge'] = $challenge;
         $uid = b64url_encode($_SESSION['email'] ?: 'user');
@@ -376,16 +387,20 @@ switch ($action) {
     case 'webauthn_register':
         require_auth();
         if ($method !== 'POST') json_out(['error' => 'method'], 405);
+        // Yonetici hesabi passkey kaydedemez (guvenlik)
+        if (!empty($_SESSION['is_admin'])) {
+            json_out(['error' => 'admin_no_bio'], 403);
+        }
         $in = body_json();
         $err = wa_check_clientdata(b64url_decode($in['clientDataJSON'] ?? ''), 'webauthn.create');
         if ($err !== true) json_out(['error' => 'verify', 'detail' => $err], 422);
         if (empty($in['id']) || empty($in['publicKey'])) json_out(['error' => 'missing'], 422);
         $store = wa_load();
+        // Tum passkey'ler yalnizca goruntuleme seviyesindedir (admin degil).
         $store[$in['id']] = [
             'pub' => $in['publicKey'],            // SPKI DER (base64url)
             'alg' => (int) ($in['alg'] ?? -7),
             'email' => $_SESSION['email'],
-            'isAdmin' => !empty($_SESSION['is_admin']),
             'created' => date('c'),
         ];
         wa_save($store);
@@ -440,7 +455,8 @@ switch ($action) {
         $ok = openssl_verify($signedData, $sig, $pk, OPENSSL_ALGO_SHA256);
         if ($ok !== 1) json_out(['error' => 'signature'], 422);
 
-        login_user($cred['email'], $cred['isAdmin'], true);
+        // Face ID girisi ASLA yonetici degildir (yalnizca goruntuleme).
+        login_user($cred['email'], false, false);
         unset($_SESSION['wa_challenge']);
         json_out(['status' => 'ok']);
         break;
