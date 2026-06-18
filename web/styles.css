@@ -109,6 +109,24 @@ body{
     padding:3px 10px;border-radius:var(--radius-pill);font-size:12px;margin-bottom:6px}
 .otp-input{text-align:center;font-size:26px;letter-spacing:.5em;font-weight:700;font-variant-numeric:tabular-nums;padding-left:.5em !important}
 .login-foot{text-align:center;font-size:11px;color:var(--s300);margin-top:24px}
+/* Hizli giris (biyometrik) */
+#bioBtn .ic{width:20px;height:20px}
+.or-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--s400);font-size:12px}
+.or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--s200)}
+.bio-offer{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--brand-100);
+    border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-card)}
+.bio-offer-ic{width:44px;height:44px;border-radius:12px;background:var(--brand-50);color:var(--brand-600);
+    display:flex;align-items:center;justify-content:center;flex:none}
+.bio-offer-ic .ic{width:26px;height:26px}
+.bio-offer-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bio-offer-txt strong{font-size:14px;color:var(--s800)}
+.bio-offer-txt span{font-size:12.5px;color:var(--s500)}
+.bio-offer-actions{display:flex;gap:8px;flex:none}
+@media (max-width:560px){
+    .bio-offer{flex-wrap:wrap}
+    .bio-offer-actions{width:100%}
+    .bio-offer-actions .btn{flex:1}
+}
 
 /* ============ APPBAR ============ */
 .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);

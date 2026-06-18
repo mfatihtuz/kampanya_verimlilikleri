@@ -39,6 +39,7 @@
     <symbol id="i-layers" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
     <symbol id="i-trend" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M23 6l-9.5 9.5-5-5L1 18"/></symbol>
     <symbol id="i-spinner" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M12 3a9 9 0 109 9"/></symbol>
+    <symbol id="i-faceid" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2M9 9.5v1M15 9.5v1M12 9v3l-1 1M9 14.5a4 4 0 006 0"/></symbol>
 </svg>
 
 <!-- ============ GIRIS EKRANI ============ -->
@@ -51,6 +52,16 @@
         </div>
 
         <div id="loginAlert" class="alert" hidden></div>
+
+        <!-- Hizli giris (Face ID / parmak izi) - yalnizca bu cihazda kuruluysa -->
+        <div id="bioBox" hidden>
+            <button type="button" id="bioBtn" class="btn btn-primary btn-block">
+                <svg class="ic"><use href="#i-faceid"/></svg>
+                <span class="btn-label">Face ID ile giriş</span>
+                <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+            </button>
+            <div class="or-divider"><span>ya da e-posta ile</span></div>
+        </div>
 
         <!-- Adim 1: e-posta -->
         <form id="formStep1" class="login-form" autocomplete="on">
@@ -86,6 +97,7 @@
             <button type="button" class="btn-link" id="backToStep1">Geri dön</button>
         </form>
 
+        <button type="button" class="btn-link" id="bioRemove" hidden>Bu cihazda hızlı girişi kaldır</button>
         <p class="login-foot">Güvenli Erişim &middot; <span id="loginYear"></span></p>
     </div>
 </main>
@@ -117,6 +129,22 @@
     </header>
 
     <main class="container">
+        <!-- Hizli giris kurulum onerisi (destekleyen cihazlarda, bir kez) -->
+        <div id="bioOffer" class="bio-offer" hidden>
+            <div class="bio-offer-ic"><svg class="ic"><use href="#i-faceid"/></svg></div>
+            <div class="bio-offer-txt">
+                <strong>Hızlı giriş</strong>
+                <span>Bu cihazda Face ID / parmak izi ile saniyeler içinde giriş yapın.</span>
+            </div>
+            <div class="bio-offer-actions">
+                <button class="btn btn-ghost" id="bioDismiss">Şimdi değil</button>
+                <button class="btn btn-primary" id="bioEnable">
+                    <span class="btn-label">Etkinleştir</span>
+                    <svg class="ic spin" hidden><use href="#i-spinner"/></svg>
+                </button>
+            </div>
+        </div>
+
         <!-- KPI Kartlari -->
         <section class="kpi-grid" id="kpiGrid">
             <div class="kpi-card">

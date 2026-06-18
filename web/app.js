@@ -11,6 +11,8 @@
     var STORE_ID = 'lav_saved_id';
     var STORE_REMEMBER = 'lav_remember_pref';
     var STORE_DATA = 'lav_data_cache_v1';
+    var STORE_BIO = 'lav_bio_cred';        // bu cihazda kayitli passkey kimligi
+    var STORE_BIO_ASK = 'lav_bio_asked';   // hizli giris onerisi gosterildi mi
 
     var state = {
         campaigns: [],
@@ -86,6 +88,25 @@
         if (sp) sp.hidden = !on;
     }
 
+    /* ---- Biyometrik (WebAuthn) yardimcilari ---- */
+    function bioSupported() {
+        return !!(window.PublicKeyCredential && navigator.credentials &&
+            navigator.credentials.create && navigator.credentials.get);
+    }
+    function getBioCred() { try { return localStorage.getItem(STORE_BIO); } catch (e) { return null; } }
+    function bufToB64url(buf) {
+        var b = new Uint8Array(buf), s = '';
+        for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+        return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function b64urlToBuf(str) {
+        str = String(str).replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) str += '=';
+        var bin = atob(str), b = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+        return b.buffer;
+    }
+
     /* ---------------- Acilis ---------------- */
 
     function boot() {
@@ -120,6 +141,7 @@
         $('formStep1').hidden = false;
         $('formStep2').hidden = true;
         hideAlert($('loginAlert'));
+        updateBioUI();
         setTimeout(function () { try { $('identifier').focus(); } catch (e) {} }, 50);
     }
 
@@ -130,6 +152,7 @@
         $('userEmail').textContent = session.email || '';
         $('adminUpdateBtn').hidden = !session.isAdmin;
         loadData();
+        setTimeout(maybeOfferBio, 1200);
     }
 
     /* ---------------- Giris akisi ---------------- */
@@ -207,6 +230,126 @@
             $('otpCode').value = '';
             showLogin();
         });
+    }
+
+    /* ---------------- Biyometrik giris (Face ID / parmak izi) ---------------- */
+
+    // Giris ekranindaki hizli giris dugmesi/baglantisini guncelle
+    function updateBioUI() {
+        var has = bioSupported() && !!getBioCred();
+        $('bioBox').hidden = !has;
+        $('bioRemove').hidden = !has;
+    }
+
+    // Bu cihazda passkey kur (kullanici giris yaptiktan sonra)
+    function bioRegister(btn) {
+        if (!bioSupported()) { toast('Bu cihaz biyometrik girişi desteklemiyor.', 'error'); return; }
+        if (btn) setLoading(btn, true);
+        var newId = null;
+        api('webauthn_reg_options', { method: 'POST', body: {} })
+            .then(function (res) {
+                var o = res.data;
+                if (!o || !o.challenge) throw new Error('options');
+                return navigator.credentials.create({
+                    publicKey: {
+                        challenge: b64urlToBuf(o.challenge),
+                        rp: o.rp,
+                        user: { id: b64urlToBuf(o.user.id), name: o.user.name, displayName: o.user.displayName },
+                        pubKeyCredParams: o.pubKeyCredParams,
+                        authenticatorSelection: o.authenticatorSelection,
+                        timeout: o.timeout,
+                        attestation: o.attestation
+                    }
+                });
+            })
+            .then(function (cred) {
+                newId = cred.id;
+                var resp = cred.response;
+                var pub = resp.getPublicKey ? resp.getPublicKey() : null;
+                if (!pub) throw new Error('getPublicKey');
+                var alg = resp.getPublicKeyAlgorithm ? resp.getPublicKeyAlgorithm() : -7;
+                return api('webauthn_register', { method: 'POST', body: {
+                    id: cred.id,
+                    publicKey: bufToB64url(pub),
+                    alg: alg,
+                    clientDataJSON: bufToB64url(resp.clientDataJSON)
+                }});
+            })
+            .then(function (r) {
+                if (btn) setLoading(btn, false);
+                if (r.data && r.data.status === 'ok') {
+                    try { localStorage.setItem(STORE_BIO, newId); } catch (e) {}
+                    hideBioOffer();
+                    toast('Hızlı giriş etkinleştirildi.', 'success');
+                } else {
+                    toast('Hızlı giriş kurulamadı.', 'error');
+                }
+            })
+            .catch(function () {
+                if (btn) setLoading(btn, false);
+                // Kullanici vazgectiyse sessiz kal
+            });
+    }
+
+    // Passkey ile giris yap (oturum yokken)
+    function bioLogin() {
+        if (!bioSupported()) return;
+        var credId = getBioCred();
+        if (!credId) return;
+        hideAlert($('loginAlert'));
+        setLoading($('bioBtn'), true);
+        api('webauthn_login_options', { method: 'POST', body: {} })
+            .then(function (res) {
+                var o = res.data;
+                return navigator.credentials.get({
+                    publicKey: {
+                        challenge: b64urlToBuf(o.challenge),
+                        rpId: o.rpId,
+                        timeout: o.timeout,
+                        userVerification: 'required',
+                        allowCredentials: [{ type: 'public-key', id: b64urlToBuf(credId) }]
+                    }
+                });
+            })
+            .then(function (assertion) {
+                var r = assertion.response;
+                return api('webauthn_login', { method: 'POST', body: {
+                    id: assertion.id,
+                    authenticatorData: bufToB64url(r.authenticatorData),
+                    clientDataJSON: bufToB64url(r.clientDataJSON),
+                    signature: bufToB64url(r.signature)
+                }});
+            })
+            .then(function (r) {
+                setLoading($('bioBtn'), false);
+                if (r.data && r.data.status === 'ok') return refreshAndEnter();
+                showAlert($('loginAlert'), 'error', 'Hızlı giriş doğrulanamadı. E-posta ile giriş yapın.');
+            })
+            .catch(function () {
+                setLoading($('bioBtn'), false);
+                // Kullanici vazgecti / cihaz reddetti -> e-posta yedek
+            });
+    }
+
+    // Bu cihazdaki passkey'i kaldir
+    function bioDisable() {
+        var credId = getBioCred();
+        try { localStorage.removeItem(STORE_BIO); } catch (e) {}
+        if (credId) api('webauthn_disable', { method: 'POST', body: { id: credId } });
+        updateBioUI();
+        toast('Bu cihazda hızlı giriş kaldırıldı.');
+    }
+
+    function maybeOfferBio() {
+        if (!bioSupported()) return;
+        if (getBioCred()) return;             // zaten kurulu
+        var asked; try { asked = localStorage.getItem(STORE_BIO_ASK); } catch (e) {}
+        if (asked === '1') return;            // daha once soruldu
+        $('bioOffer').hidden = false;
+    }
+    function hideBioOffer() {
+        $('bioOffer').hidden = true;
+        try { localStorage.setItem(STORE_BIO_ASK, '1'); } catch (e) {}
     }
 
     /* ---------------- Veri ---------------- */
@@ -633,6 +776,12 @@
         $('formStep2').addEventListener('submit', onStep2);
         $('backToStep1').addEventListener('click', showLogin);
         $('logoutBtn').addEventListener('click', onLogout);
+
+        // Biyometrik (Face ID / parmak izi)
+        $('bioBtn').addEventListener('click', bioLogin);
+        $('bioRemove').addEventListener('click', bioDisable);
+        $('bioEnable').addEventListener('click', function () { bioRegister($('bioEnable')); });
+        $('bioDismiss').addEventListener('click', hideBioOffer);
 
         $('fKalem').addEventListener('input', debounce(applyFilters, 180));
         $('fHat').addEventListener('change', applyFilters);

@@ -49,6 +49,15 @@ Bu kadar. `https://siteniz/` adresini açtığınızda giriş ekranı gelir.
   gelen 6 haneli kodu girip giriş yapar.
 - **Beni hatırla:** İşaretliyken bir sonraki açılışta tekrar kod istenmez ve
   e-posta alanı hazır gelir — diğer uygulamalardaki gibi sıradan davranır.
+- **Face ID / parmak izi (hızlı giriş):** Destekleyen cihazlarda, ilk girişten
+  sonra "Etkinleştir" denilerek kurulur. Sonraki açılışlarda giriş ekranındaki
+  **"Face ID ile giriş"** düğmesiyle saniyeler içinde girilir. Standart
+  **passkey (WebAuthn)** teknolojisi kullanılır; doğrulama sunucuda imzayla
+  yapılır. Cihaz desteklemezse bu seçenek hiç görünmez, e-posta ile giriş
+  her zaman çalışır.
+
+  > Not: Face ID/parmak izi yalnızca **HTTPS** üzerinde (veya `localhost`)
+  > çalışır. Canlıda sitenizin HTTPS olması yeterlidir.
 
 İzin verilen e-posta uzantısı ve diğer ayarlar `web/config.php` içindedir.
 
@@ -130,7 +139,7 @@ web/
 ├── generate_icons.php      Uygulama simgesi üretici
 ├── uretim_verileri.xlsx    Veri dosyası (uygulamadan güncellenir)
 ├── icons/                  Uygulama simgeleri
-└── cache/                  Otomatik önbellek + Excel yedekleri (yazılabilir)
+└── cache/                  Otomatik önbellek + Excel yedekleri + passkey'ler (yazılabilir)
 ```
 
 ---
