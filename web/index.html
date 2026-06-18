@@ -145,10 +145,7 @@
             </div>
         </div>
 
-        <!-- Otomatik icgoru seridi -->
-        <section class="insight-strip" id="insightStrip" hidden></section>
-
-        <!-- KPI Kartlari (yil bazli degisim + mini trend) -->
+        <!-- KPI Kartlari (en ustte; yil bazli degisim + mini trend) -->
         <section class="kpi-grid" id="kpiGrid">
             <div class="kpi-card">
                 <div class="kpi-top">
@@ -185,50 +182,6 @@
                 <span class="kpi-label">Toplam Saat</span>
                 <strong class="kpi-value" id="kpiSaat">0</strong>
                 <div class="kpi-spark" id="kpiSaatSpark"></div>
-            </div>
-        </section>
-
-        <!-- Grafikler: Aylik trend + Hat karsilastirmasi -->
-        <section class="chart-grid">
-            <div class="panel chart-card">
-                <div class="panel-head">
-                    <h2>Aylık Verim Trendi</h2>
-                    <span class="muted" id="trendNote"></span>
-                </div>
-                <div class="chart" id="trendChart"></div>
-            </div>
-            <div class="panel chart-card">
-                <div class="panel-head">
-                    <h2>Hatlara Göre Verim</h2>
-                    <span class="muted">ağırlıklı ortalama</span>
-                </div>
-                <div class="chart" id="lineCompareChart"></div>
-            </div>
-        </section>
-
-        <!-- Dagilim + Urun performansi -->
-        <section class="chart-grid">
-            <div class="panel chart-card">
-                <div class="panel-head">
-                    <h2>Verim Dağılımı</h2>
-                    <span class="muted" id="distTotal"></span>
-                </div>
-                <div class="chart sm" id="histChart"></div>
-                <div class="dist-legend">
-                    <span><i class="dot green"></i>Yüksek (≥%91) <b id="cntHigh">0</b></span>
-                    <span><i class="dot amber"></i>Orta (%83–91) <b id="cntMid">0</b></span>
-                    <span><i class="dot red"></i>Düşük (&lt;%83) <b id="cntLow">0</b></span>
-                </div>
-            </div>
-            <div class="panel">
-                <div class="panel-head">
-                    <h2>Ürün Performansı</h2>
-                    <div class="seg-toggle" id="lbToggle">
-                        <button type="button" data-lb="top" class="active">En İyi</button>
-                        <button type="button" data-lb="bottom">En Düşük</button>
-                    </div>
-                </div>
-                <div class="leaderboard" id="leaderboard"></div>
             </div>
         </section>
 
@@ -276,32 +229,35 @@
                 </span>
             </div>
 
-            <!-- Masaüstü tablo başlığı (tıklanabilir sıralama) -->
-            <div class="table-head" id="tableHead">
-                <span class="col-kalem th-sort" data-sort="kalem">Kampanya<i class="sort-ar"></i></span>
-                <span class="col-date th-sort" data-sort="date">Başlangıç<i class="sort-ar"></i></span>
-                <span class="col-date">Bitiş</span>
-                <span class="col-num th-sort" data-sort="verim">Verim<i class="sort-ar"></i></span>
-                <span class="col-num th-sort" data-sort="adetsel">Adetsel<i class="sort-ar"></i></span>
-                <span class="col-num th-sort" data-sort="zamansal">Zamansal<i class="sort-ar"></i></span>
-                <span class="col-num th-sort" data-sort="saat">Saat<i class="sort-ar"></i></span>
-                <span class="col-num th-sort" data-sort="devir">Devir<i class="sort-ar"></i></span>
-            </div>
+            <!-- Tablo: sabit yükseklikli panel, kendi içinde kayar
+                 (böylece altındaki analizler her zaman erişilebilir kalır) -->
+            <div class="table-scroll custom-scrollbar" id="tableScroll">
+                <!-- Masaüstü tablo başlığı (tıklanabilir sıralama, yapışkan) -->
+                <div class="table-head" id="tableHead">
+                    <span class="col-kalem th-sort" data-sort="kalem">Kampanya<i class="sort-ar"></i></span>
+                    <span class="col-date th-sort" data-sort="date">Başlangıç<i class="sort-ar"></i></span>
+                    <span class="col-date">Bitiş</span>
+                    <span class="col-num th-sort" data-sort="verim">Verim<i class="sort-ar"></i></span>
+                    <span class="col-num th-sort" data-sort="adetsel">Adetsel<i class="sort-ar"></i></span>
+                    <span class="col-num th-sort" data-sort="zamansal">Zamansal<i class="sort-ar"></i></span>
+                    <span class="col-num th-sort" data-sort="saat">Saat<i class="sort-ar"></i></span>
+                    <span class="col-num th-sort" data-sort="devir">Devir<i class="sort-ar"></i></span>
+                </div>
+                <div class="rows" id="rows" role="list"></div>
+                <div id="scrollSentinel" style="height:1px"></div>
 
-            <!-- Liste (kademeli yüklenir) -->
-            <div class="rows" id="rows" role="list"></div>
-            <div id="scrollSentinel" style="height:1px"></div>
-
-            <!-- Toplam / agirlikli ortalama satiri (filtreye gore) -->
-            <div class="table-foot" id="tableFoot" hidden>
-                <span class="col-kalem" id="footLabel">Toplam</span>
-                <span class="col-date"></span>
-                <span class="col-date"></span>
-                <span class="col-num" id="footVerim"></span>
-                <span class="col-num" id="footAdetsel"></span>
-                <span class="col-num" id="footZamansal"></span>
-                <span class="col-num" id="footSaat"></span>
-                <span class="col-num" id="footDevir"></span>
+                <!-- Toplam / agirlikli ortalama satiri (panel icinde, alta yapisik;
+                     boylece baslik/satirlarla sutunlari birebir hizali kalir) -->
+                <div class="table-foot" id="tableFoot" hidden>
+                    <span class="col-kalem" id="footLabel">Toplam</span>
+                    <span class="col-date"></span>
+                    <span class="col-date"></span>
+                    <span class="col-num" id="footVerim"></span>
+                    <span class="col-num" id="footAdetsel"></span>
+                    <span class="col-num" id="footZamansal"></span>
+                    <span class="col-num" id="footSaat"></span>
+                    <span class="col-num" id="footDevir"></span>
+                </div>
             </div>
 
             <!-- Bos durum -->
@@ -312,10 +268,57 @@
                 <button class="btn btn-primary" id="clearBtn2">Filtreleri temizle</button>
             </div>
 
-            <!-- Yukleniyor -->
-            <div class="loading" id="loadingState">
+            <!-- Yukleniyor (JS tarafindan gosterilir) -->
+            <div class="loading" id="loadingState" hidden>
                 <svg class="ic spin lg"><use href="#i-spinner"/></svg>
                 <span>Veriler yükleniyor...</span>
+            </div>
+        </section>
+
+        <!-- ===== ANALIZLER (tablonun altinda) ===== -->
+        <section class="insight-strip" id="insightStrip" hidden></section>
+
+        <!-- Aylik verim trendi (tam genislik) -->
+        <div class="panel chart-card">
+            <div class="panel-head">
+                <h2>Aylık Verim Trendi</h2>
+                <span class="muted" id="trendNote"></span>
+            </div>
+            <div class="chart" id="trendChart"></div>
+        </div>
+
+        <!-- Hatlara gore verim (tam genislik, yatay cubuklar) -->
+        <div class="panel chart-card">
+            <div class="panel-head">
+                <h2>Hatlara Göre Verim</h2>
+                <span class="muted">ağırlıklı ortalama · saate göre</span>
+            </div>
+            <div class="hbars" id="lineCompareChart"></div>
+        </div>
+
+        <!-- Dagilim + Urun performansi -->
+        <section class="chart-grid">
+            <div class="panel chart-card">
+                <div class="panel-head">
+                    <h2>Verim Dağılımı</h2>
+                    <span class="muted" id="distTotal"></span>
+                </div>
+                <div class="chart sm" id="histChart"></div>
+                <div class="dist-legend">
+                    <span><i class="dot green"></i>Yüksek (≥%91) <b id="cntHigh">0</b></span>
+                    <span><i class="dot amber"></i>Orta (%83–91) <b id="cntMid">0</b></span>
+                    <span><i class="dot red"></i>Düşük (&lt;%83) <b id="cntLow">0</b></span>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Ürün Performansı</h2>
+                    <div class="seg-toggle" id="lbToggle">
+                        <button type="button" data-lb="top" class="active">En İyi</button>
+                        <button type="button" data-lb="bottom">En Düşük</button>
+                    </div>
+                </div>
+                <div class="leaderboard" id="leaderboard"></div>
             </div>
         </section>
     </main>
