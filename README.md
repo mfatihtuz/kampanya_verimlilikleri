@@ -37,9 +37,22 @@ yeterlidir). Ek kütüphane/kurulum yoktur.
 3. `web/cache/` klasörünün **yazılabilir** olduğundan emin olun (genelde
    otomatiktir; sorun olursa izinleri `755`/`775` yapın). Veriler ilk açılışta
    bu klasöre önbelleklenir, sonraki açılışlar çok hızlı olur.
-4. HTTPS önerilir (telefona kurulum ve "beni hatırla" için en sağlıklısı).
+4. HTTPS önerilir (telefona kurulum, "beni hatırla" ve Face ID için gereklidir).
 
 Bu kadar. `https://siteniz/` adresini açtığınızda giriş ekranı gelir.
+
+### Sunucu güvenliği (önemli)
+
+Ham veri dosyaları (`uretim_verileri.xlsx`, `cache/`) **giriş yapmadan dışarıdan
+indirilememelidir.** Bunun için pakette **`.htaccess`** dosyaları hazır gelir;
+**Apache / cPanel** kullanıyorsanız ek işlem gerekmez.
+
+**Nginx** kullanıyorsanız `.htaccess` çalışmaz; sunucu yapılandırmanıza şunu ekleyin:
+
+```nginx
+location ~* \.xlsx$        { deny all; }
+location /cache/           { deny all; }
+```
 
 ---
 

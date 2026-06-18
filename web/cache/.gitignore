@@ -1,3 +1,4 @@
 # Onbellek ve yuklenen yedekler (otomatik uretilir; surum kontrolune girmez)
 *
 !.gitignore
+!.htaccess
